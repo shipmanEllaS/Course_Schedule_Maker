@@ -1,3 +1,11 @@
+/**********************************************************************************************
+ * @file : Course.java
+ * @description : Contains all of the information for a course offerred at WFU. Parent class
+ *                of Section.
+ * @author : Ella Shipman
+ * @date : 10 February 2025
+ *********************************************************************************************/
+
 import java.util.*;
 
 public class Course {
@@ -6,7 +14,7 @@ public class Course {
     private String academic_level;
     private String course_owner;
     private ArrayList<String> grading_basis = new ArrayList<>();
-    private int hours;
+    private String hours;
     private String description;
     private String format;
     private ArrayList<String> equivalent_courses = new ArrayList<>();
@@ -18,7 +26,7 @@ public class Course {
         title = null;
         academic_level = null;
         course_owner = null;
-        hours = -1;
+        hours = null;
         description = null;
         format = null;
         location = null;
@@ -28,20 +36,16 @@ public class Course {
         course_materials = null;
     }
 
-    public Course(String id, String name, String level, String department, int time,
-                  String desc, String class_style, String place) {
-        short_id = id;
-        title = name;
-        academic_level = level;
-        course_owner = department;
-        hours = time;
-        description = desc;
-        format = class_style;
-        location = place;
-
-        grading_basis = null;
-        equivalent_courses = null;
-        course_materials = null;
+    public void fillIn(String id, String courseName, String level, String department, String time,
+                       String desc, String class_style, String place) {
+        this.setShortID(id);
+        this.setTitle(courseName);
+        this.setAcademicLevel(level);
+        this.setCourseOwner(department);
+        this.setHours(time);
+        this.setDescription(desc);
+        this.setFormat(class_style);
+        this.setLocation(place);
     }
 
     public void setShortID(String id) {
@@ -72,10 +76,10 @@ public class Course {
         return course_owner;
     }
 
-    public void setHours(int num) {
+    public void setHours(String num) {
         hours = num;
     }
-    public int getHours() {
+    public String getHours() {
         return hours;
     }
 
@@ -123,6 +127,7 @@ public class Course {
 
 
     public void printCourse() {
+        System.out.println("=================================");
         System.out.println(short_id + " - " + title);
         System.out.println("Academic Level: " + academic_level);
         System.out.println("Course Owner: " + course_owner);
@@ -132,7 +137,12 @@ public class Course {
         System.out.println("Instructional formats: " + format);
         System.out.println("Equivalent Courses: " + equivalent_courses);
         System.out.println("Locations Offered: " + location);
-        System.out.println("Course Materials: " + course_materials);
+        System.out.print("Course Materials: ");
+        if (course_materials == null) {
+            System.out.println("Not listed");
+        } else {
+            System.out.println(course_materials);
+        }
     }
 
 
