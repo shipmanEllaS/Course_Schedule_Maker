@@ -11,11 +11,44 @@ public class Section extends Course{
     private String meeting_day;
     private String meeting_time;
     private String instructor;
+    private int[] meetingDayOfTheWeek;
 
     public Section() {
         section_id = null;
         meeting_day = null;
         meeting_time = null;
         instructor = null;
+    }
+
+    //Returns the days of the week as an int[] (0 - no class, 1 - class)
+    public int[] getDayOfTheWeek() {
+        if (meetingDayOfTheWeek == null) {
+            meetingDayOfTheWeek = calculateMeetingDay(meeting_day);
+        }
+
+        return meetingDayOfTheWeek;
+    }
+
+    public void setMeetingDay (String days) {
+        meeting_day = days;
+    }
+
+    //Converts the meeting days into a list of numbers (0 - not meeting, 1 - meeting)
+    private int[] calculateMeetingDay(String days) {
+        int[] results = {0, 0, 0, 0, 0, 0, 0};
+        char[] possible_days = {'S', 'M', 'T', 'W', 'R', 'F', 's'};
+
+        if (days.equals(null)) {
+            return results;
+        }
+
+        for (int i = 0; i <= days.length() - 1; i++) {
+            for (int j = 0; j < possible_days.length; j++) {
+                if (days.charAt(i) == possible_days[j]) {
+                    results[j] = 1;
+                }
+            }
+        }
+        return results;
     }
 }
