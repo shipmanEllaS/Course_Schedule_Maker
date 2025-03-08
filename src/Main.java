@@ -1,23 +1,22 @@
 /**********************************************************************************************
- * @file : PutCourseInCatalogue.java
+ * @file : Main.java
  * @description : Takes information from a text file and assigns it to a course object. Once
  *                all courses are added, they are printed out.
  * @author : Ella Shipman
- * @date : 10 February 2023
+ * @date : 7 March 2025
  *********************************************************************************************/
 
-import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+        populateProfessors("C:/Users/lminn/IdeaProjects/Course_Schedule_Maker/src/professors.txt");
         ArrayList<Section> courses = putCoursesInCatalogue();
         createCalendarView(courses);
     }
 
-    public static void createCalendarView(ArrayList<Section> courses_selected) {
+    public static void createCalendarView(ArrayList<Section> sections_selected) {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(1.0);
         StdDraw.setCanvasSize(1600, 400);
@@ -40,11 +39,11 @@ public class Main {
         }
 
         //Class blocks
-        System.out.println("Courses list Size: " + courses_selected.size());
-        for (int i = 0; i < courses_selected.size(); i++) {
-            for (int j = 0; j < courses_selected.get(i).getDayOfTheWeek().length; j++) {
-                if (courses_selected.get(i).getDayOfTheWeek()[j] == 1) {
-                    StdDraw.circle(((((double)(j + 1) / 10) * 1.15) + 0.055), (0.65 - (double)(i) / 10), 0.01);
+        for (int i = 0; i < sections_selected.size(); i++) {
+            for (int j = 0; j < sections_selected.get(i).getDayOfTheWeek().length; j++) {
+                if (sections_selected.get(i).getDayOfTheWeek()[j] == 1) {
+                    StdDraw.rectangle(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), 0.055, 0.045);
+                    StdDraw.text(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), sections_selected.get(i).getShortID());
                 }
             }
         }
@@ -70,16 +69,16 @@ public class Main {
 
         while (fileReader.hasNextLine()) {
             String data = fileReader.nextLine();
-            String[] wordsList = data.split(";");
+            String[] wordsList = data.split("~~");
 
             //Setting up section
             Section newSect = new Section();
-            newSect.fillIn(wordsList[0], wordsList[1], wordsList[2],wordsList[3], wordsList[5], wordsList[6], wordsList[7], wordsList[9]);
+            newSect.fillIn(wordsList[0], wordsList[4], wordsList[5],wordsList[6], wordsList[8], wordsList[9], wordsList[10], wordsList[12]);
             courseCatalogue.add(newSect);
 
             //Adding grading bases
             ArrayList<String> grade = new ArrayList<>();
-            String[] basisList = wordsList[4].split(",");
+            String[] basisList = wordsList[7].split(",");
             for (int i = 0; i < basisList.length; i++) {
                 grade.add(basisList[i]);
             }
@@ -87,7 +86,7 @@ public class Main {
 
             //Adding equivalent courses
             ArrayList<String> equivalents = new ArrayList<>();
-            String[] courseList = wordsList[8].split(",");
+            String[] courseList = wordsList[11].split(",");
             for (int i = 0; i < courseList.length; i++) {
                 equivalents.add(courseList[i]);
             }
@@ -97,7 +96,7 @@ public class Main {
             ArrayList<String> materials = new ArrayList<>();
             String[] materialsList;
             try {
-                materialsList = wordsList[10].split(",");
+                materialsList = wordsList[13].split(",");
             } catch (IndexOutOfBoundsException e) {
                 materialsList = null;
             }
@@ -109,12 +108,71 @@ public class Main {
                 newSect.setCourseMaterials(materials);
             }
 
-            //MEETING DAYYYY
-            newSect.setMeetingDay("TR");
+            //Section number
+            newSect.setSectionID(wordsList[1]);
+
+            //Meeting day(s)
+            newSect.setMeetingDay(wordsList[2]);
+
+            //Meeting times
+            newSect.setMeetingTime(wordsList[3]);
+
+            //Instructor
+            newSect.setInstructor(wordsList[14]);
+
+            //Tags
+            newSect.setTags(wordsList[15]);
 
             newSect.printCourse();
             }
             return courseCatalogue;
         }
+        /*
+        0 - id *1
+        1 - section
+        2 - days
+        3 - time
+        4 - title *2
+        5 - level *3
+        6 - dept *4
+        7 - grading @
+        8 - hours *5
+        9 - desc *6
+        10 - format *7
+        11 - equivalent courses @
+        12 - campus *8
+        13 - materials @
+        14 - instructor
+        15 - tags
+         */
+
+    public static void populateProfessors(String fileName) {
+        FileInputStream profFile = null;
+        try {
+            profFile = new FileInputStream(fileName);
+        } catch (FileNotFoundException e) {
+            System.out.println("Professor File Not Found!");
+        }
+
+        Scanner profReader = new Scanner(profFile);
+
+        String data;
+        String[] dataLine;
+        while (profReader.hasNextLine()) {
+            data = profReader.nextLine();
+            dataLine = data.split("~~");
+
+            for (int i = 0; i <= dataLine.length - 1; i++) {
+                if ((dataLine[i].equals("N/A")) && (i > 4)) {
+                    dataLine[i] = "-1";
+                }
+            }
+
+            Professor tempProf = new Professor(dataLine[0], dataLine[1], dataLine[2], dataLine[3], dataLine[4], dataLine[5],
+                                               Double.parseDouble(dataLine[6]), Integer.parseInt(dataLine[7]),
+                                               Double.parseDouble(dataLine[8]));
+        }
     }
+}
+
 

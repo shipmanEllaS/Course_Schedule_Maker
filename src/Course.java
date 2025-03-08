@@ -3,7 +3,7 @@
  * @description : Contains all of the information for a course offerred at WFU. Parent class
  *                of Section.
  * @author : Ella Shipman
- * @date : 10 February 2025
+ * @date : 7 March 2025
  *********************************************************************************************/
 
 import java.util.*;

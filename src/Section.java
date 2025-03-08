@@ -11,6 +11,7 @@ public class Section extends Course{
     private String meeting_day;
     private String meeting_time;
     private String instructor;
+    private String tags;
     private int[] meetingDayOfTheWeek;
 
     public Section() {
@@ -31,6 +32,22 @@ public class Section extends Course{
 
     public void setMeetingDay (String days) {
         meeting_day = days;
+    }
+
+    public void setSectionID (String id) {
+        section_id = id;
+    }
+
+    public void setMeetingTime (String time) {
+        meeting_time = time;
+    }
+
+    public void setInstructor (String name) {
+        instructor = name;
+    }
+
+    public void setTags (String tags) {
+        this.tags = tags;
     }
 
     //Converts the meeting days into a list of numbers (0 - not meeting, 1 - meeting)
