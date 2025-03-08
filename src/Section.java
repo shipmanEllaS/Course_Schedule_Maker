@@ -19,6 +19,28 @@ public class Section extends Course{
         meeting_day = null;
         meeting_time = null;
         instructor = null;
+        tags = null;
+    }
+
+    public Section (Section s) {
+        this.section_id = s.section_id;
+        this.meeting_day = s.meeting_day;
+        this.meeting_time = s.meeting_time;
+        this.instructor = s.instructor;
+        this.tags = s.tags;
+        //From Class Course:
+        setShortID(s.getShortID());
+        setTitle(s.getTitle());
+        setAcademicLevel(s.getAcademicLevel());
+        setCourseOwner(s.getCourseOwner());
+        setHours(s.getHours());
+        setDescription(s.getDescription());
+        setFormat(s.getFormat());
+        setLocation(s.getLocation());
+
+        setGradingBasis(s.getGradingBasis());
+        setEquivalentCourses(s.getEquivalentCourses());
+        setCourseMaterials(s.getCourseMaterials());
     }
 
     //Returns the days of the week as an int[] (0 - no class, 1 - class)
@@ -48,6 +70,34 @@ public class Section extends Course{
 
     public void setTags (String tags) {
         this.tags = tags;
+    }
+
+    //Returns the hour of meeting_time as an integer (excluding minutes)
+    public int calculateMeetingHour() {
+        if (meeting_time == null) {
+            return -1;
+        }
+        if (meeting_time.charAt(2) == ':') {            //##:##
+            return Integer.parseInt(meeting_time.substring(0, 2));
+        } else {                                        //#:##
+            return Integer.parseInt(meeting_time.substring(0, 1));
+        }
+    }
+
+    public int calculateMeetingMinutes() {
+        if (meeting_time == null) {
+            return -1;
+        }
+        if (meeting_time.charAt(2) == ':') {            //##:##
+            return Integer.parseInt(meeting_time.substring(3, 5));
+        } else {                                        //#:##
+            return Integer.parseInt(meeting_time.substring(2, 4));
+        }
+    }
+
+    @Override
+    public String toString() {
+        return (getShortID() + "-" + section_id + ": " + getTitle() + ". Meets " + meeting_day + " at " + meeting_time + ". ");
     }
 
     //Converts the meeting days into a list of numbers (0 - not meeting, 1 - meeting)
