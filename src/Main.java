@@ -3,7 +3,7 @@
  * @description : Takes information from a text file and assigns it to a course object. Once
  *                all courses are added, they are printed out.
  * @author : Ella Shipman
- * @date : 7 March 2025
+ * @date : 30 March 2025
  *********************************************************************************************/
 
 import java.io.*;
@@ -12,9 +12,9 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) {
         populateProfessors("C:/Users/lminn/IdeaProjects/Course_Schedule_Maker/src/professors.txt");
-        ArrayList<Section> courses = putCoursesInCatalogue();
+        Catalogue catalogue = putSectionsInCatalogue();
 
-        sortCourses(courses);
+        catalogue.sortCourses();
 
         FileOutputStream sortedCourseFile = null;
         try {
@@ -26,13 +26,19 @@ public class Main {
 
         PrintWriter courseWriter = new PrintWriter(sortedCourseFile);
 
-        printCourses(courses, courses.size(), courseWriter);
+        printCourses(catalogue.head, courseWriter);
 
         //Flushing and closing output file
         courseWriter.flush();
         courseWriter.close();
 
-        createCalendarView(courses);
+        Catalogue userSections = fillSections(catalogue, args);
+        userSections.print();
+        userSections.sortCourses();
+
+        //Generating calendar view
+        createCalendarView(userSections);
+        userSections.print();
     }
 
     public static void populateProfessors(String fileName) {
@@ -63,7 +69,7 @@ public class Main {
         }
     }
 
-    public static ArrayList<Section> putCoursesInCatalogue() {
+    public static Catalogue putSectionsInCatalogue() {
         FileInputStream courseFile = null;
         try {
             courseFile = new FileInputStream("C:\\Users\\lminn\\IdeaProjects\\Course_Schedule_Maker\\src\\courseFile.txt");
@@ -71,13 +77,12 @@ public class Main {
             System.out.println("Cannot open course file!");
             System.exit(1);
         }
-
         //Scanner
         Scanner fileReader = new Scanner(courseFile);
-
         //List of classes
-        ArrayList<Section> courseCatalogue = new ArrayList<>();
+        Catalogue courseCatalogue = new Catalogue();
 
+        //Filling in section
         while (fileReader.hasNextLine()) {
             String data = fileReader.nextLine();
             String[] wordsList = data.split("~~");
@@ -85,7 +90,7 @@ public class Main {
             //Setting up section
             Section newSect = new Section();
             newSect.fillIn(wordsList[0], wordsList[4], wordsList[5], wordsList[6], wordsList[8], wordsList[9], wordsList[10], wordsList[12]);
-            courseCatalogue.add(newSect);
+            courseCatalogue.add_at_tail(newSect);
 
             //Adding grading bases
             ArrayList<String> grade = new ArrayList<>();
@@ -111,7 +116,6 @@ public class Main {
             } catch (IndexOutOfBoundsException e) {
                 materialsList = null;
             }
-
             if (materialsList != null) {
                 for (int i = 0; i < materialsList.length; i++) {
                     materials.add(materialsList[i]);
@@ -134,6 +138,8 @@ public class Main {
             //Tags
             newSect.setTags(wordsList[15]);
         }
+
+        courseCatalogue.print();
         return courseCatalogue;
 
         /*
@@ -156,49 +162,95 @@ public class Main {
          */
     }
 
-    //Sort courses cased off of SectionComparator
-    public static void sortCourses(ArrayList<Section> classes) {
-        SectionComparator sectionCompare = new SectionComparator();
+    //Prints courses into file "sortedCourseFile.txt"
+    public static void printCourses(Node listHead, PrintWriter courseWriter) {
+        Node curr = listHead;
+        if (listHead == null){
+            return;
+        } else {
+            if (curr != null) {
+                courseWriter.println(curr.data.toString());
+                printCourses(curr.next, courseWriter);
+            }
+        }
+    }
 
-        while (!isSorted(classes, classes.size(), sectionCompare)) {
-            for (int i = 0; i < classes.size() - 1; i++) {
-                if (sectionCompare.compare(classes.get(i), classes.get(i+1)) < 0) {
-                    swap(classes, i, i+1);
+    //Populates a smaller, user-selected linked list of sections to take
+    //BROKEN -- WORK ON MANUALLY SELECTING CLASSES LATER. ONLY WORKS FOR ARGS RIGHT NOW
+    public static Catalogue promptSections(Catalogue catalogue) {
+        Catalogue userSections = new Catalogue();
+
+        System.out.println("Welcome to the WFU Schedule Maker!");
+        System.out.println("Please select the classes you would like to take below.         Press 0 to stop.");
+
+        Scanner scnr = new Scanner(System.in);
+        String userInput = "1";
+        int index = -1;
+
+        System.out.println("Please choose a number from the list in \"sortedCourseFile.txt\" to select your first course.");
+        System.out.println("Press 0 to stop.");
+        userInput = scnr.next();
+        index = -1;
+
+        while (!userInput.equals("0")); {
+            if (userSections.calculateCredit() > 17) {
+                System.out.println("It seems like you have over 17 credit hours! Please be advised that courseloads over" +
+                                    "17 hours may require an academic appeal");
+            }
+
+            System.out.println("Please choose a number from the list in \"sortedCourseFile.txt\" to add a course.");
+            System.out.println("If you would like to remove courses from your list, please press R.");
+            userInput = scnr.next();
+            //index = -1;
+
+            try {
+                index = Integer.parseInt(userInput);
+            } catch (NumberFormatException e) {
+                if (userInput.equalsIgnoreCase("r")) {
+                    System.out.println("Which section in your list would you like to remove? (Please enter a number.)");
+                    try {
+                        userInput = scnr.next();
+                        index = Integer.parseInt(userInput);
+                    } catch (NumberFormatException e2) {
+                        if (userInput.equalsIgnoreCase("c")) {
+                            //break;
+                        } else {
+                            System.out.println("Please enter a valid number, or press C to cancel the swap.");
+                        }
+                    }
+                    Section removed = userSections.remove_from_index(index);
+                    catalogue.add_at_tail(removed);
+                    catalogue.sortCourses();
+
+                    System.out.println("Section " + removed.toString() + " has been removed.");
+                } else {
+                    System.out.println("Please enter a valid number.");
                 }
             }
-        }
-    }
-
-    //Checks if classes is sorted based off of SectionComparator
-    public static boolean isSorted(ArrayList<Section> classes, int n, SectionComparator SComparing) {
-        for (int i = 0; i < n - 1; i++) {
-            if (SComparing.compare(classes.get(i), classes.get(i+1)) < 0) {
-                return false;
+            if (index != -1) {
+                userSections.add_at_tail(catalogue.remove_from_index(index));
+                System.out.println(userSections.tail.data.toString() + " has been added!");
             }
+            System.out.println();
         }
-        return true;
+        userSections.sortCourses();
+        return userSections;
     }
 
-    //Swaps two elements in the class list
-    public static void swap(ArrayList<Section> classes, int index1, int index2) {
-        Section placeholder = new Section(classes.get(index1));
-        classes.set(index1, new Section(classes.get(index2)));
-        classes.set((index2), new Section(placeholder));
-    }
-
-    //Prints courses into file "sortedCourseFile.txt"
-    public static void printCourses(ArrayList<Section> classes, int length, PrintWriter courseWriter) {
-        if (length == 1) {
-            courseWriter.println(classes.get(length - 1).toString());
-        } else {
-            courseWriter.println(classes.get(length - 1).toString());
-            printCourses(classes, length - 1, courseWriter);
+    //Fill the user's personal coureload for the semester
+    public static Catalogue fillSections(Catalogue catalogue, String[] args) {
+        Catalogue userSections = new Catalogue();
+        if (args.length > catalogue.size) { System.out.println("Cannot add sections : out of bounds in catalogue."); System.exit(1);}
+        for (int i = 0; i < args.length; i++) {
+            catalogue.swap(1, Integer.parseInt(args[i]));
+            userSections.add_at_tail(catalogue.remove_from_head());
+            System.out.println("Removing " + userSections.tail.data.toString());
         }
-
+        return userSections;
     }
 
     //Creates week-view calendar pop-up for selected sections
-    public static void createCalendarView(ArrayList<Section> sections_selected) {
+    public static void createCalendarView(Catalogue sections_selected) {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(1.0);
         StdDraw.setCanvasSize(1600, 400);
@@ -221,13 +273,15 @@ public class Main {
         }
 
         //Class blocks
-        for (int i = 0; i < sections_selected.size(); i++) {
-            for (int j = 0; j < sections_selected.get(i).getDayOfTheWeek().length; j++) {
-                if (sections_selected.get(i).getDayOfTheWeek()[j] == 1) {
+        Node curr = sections_selected.head;
+        for (int i = 0; i < sections_selected.size; i++) {
+            for (int j = 0; j < curr.data.getDayOfTheWeek().length; j++) {
+                if (curr.data.getDayOfTheWeek()[j] == 1) {
                     StdDraw.rectangle(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), 0.055, 0.045);
-                    StdDraw.text(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), sections_selected.get(i).getShortID());
+                    StdDraw.text(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), curr.data.getShortID());
                 }
             }
+            curr = curr.next;
         }
 
         StdDraw.show();

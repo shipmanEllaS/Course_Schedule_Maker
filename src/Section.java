@@ -48,7 +48,6 @@ public class Section extends Course{
         if (meetingDayOfTheWeek == null) {
             meetingDayOfTheWeek = calculateMeetingDay(meeting_day);
         }
-
         return meetingDayOfTheWeek;
     }
 

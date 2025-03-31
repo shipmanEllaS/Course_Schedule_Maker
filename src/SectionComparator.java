@@ -2,7 +2,7 @@
  * @file : SectionComparator.java
  * @description : Compares two Sections against each other to inform how a list is ordered.
  * @author : Ella Shipman
- * @date : 7 March 2025
+ * @date : 30 March 2025
  *********************************************************************************************/
 
 import java.util.*;
@@ -15,9 +15,9 @@ public class SectionComparator implements Comparator<Section> {
 
         //Returns in reverse order (latest -> earliest due to current printing method (printCourses in Main)
         if (HourCompare == 0) {
-            return MinuteCompare;
+            return MinuteCompare * -1;
         } else {
-            return HourCompare;
+            return HourCompare * -1;
         }
 
     }
