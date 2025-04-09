@@ -4,20 +4,26 @@
  * @author : Ella Shipman
  * @date : 30 March 2025
  *********************************************************************************************/
-public class Node {
+public class Node <DataType> {
 
-    public Section data;
-    public Node next;
-    public Node prev;
+    public DataType data;
+    public Node<DataType> next;
+    public Node<DataType> prev;
 
     public Node(){
-        this.data = new Section();
+        this.data = null;
         next = null;
         prev = null;
     }
 
-    public Node(Section data){
+    public Node(DataType data){
         this.data = data;
+        next = null;
+        prev = null;
+    }
+
+    public Node(Node<DataType> n) {
+        this.data = n.data;
         next = null;
         prev = null;
     }

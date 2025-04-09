@@ -82,51 +82,47 @@ public class Course {
     public String getHours() {
         return hours;
     }
+    public Double calculateCreditHours() {
+        Double x;
+        char currChar;
+        String hrString = "";
+        int i = 0;
 
-    public void setDescription(String desc) {
-        description = desc;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setFormat(String type) {
-        format = type;
-    }
-    public String getFormat() {
-        return format;
-    }
-
-    public void setLocation(String place) {
-        location = place;
-    }
-    public String getLocation() {
-        return location;
-    }
-
-    public void setGradingBasis(ArrayList<String> type) {
-        grading_basis = type;
-    }
-    public ArrayList<String> getGradingBasis() {
-        return grading_basis;
+        if (hours != null) {
+            currChar = hours.charAt(0);
+            while (currChar != ' ') {
+                hrString = hrString + currChar;
+                currChar = hours.charAt(i);
+            }
+        }
+        try {
+            return Double.parseDouble(hrString);
+        } catch (NumberFormatException e) {
+            System.out.println("Cannot determine hour load for course.");
+            System.exit(1);
+        }
+        return -1.0;
     }
 
-    public void setEquivalentCourses(ArrayList<String> courses) {
-        equivalent_courses = courses;
-    }
-    public ArrayList<String> getEquivalentCourses() {
-        return equivalent_courses;
-    }
+    public void setDescription(String desc) { description = desc; }
+    public String getDescription() { return description; }
 
-    public void setCourseMaterials(ArrayList<String> materials) {
-        course_materials = materials;
-    }
-    public ArrayList<String> getCourseMaterials() {
-        return course_materials;
-    }
+    public void setFormat(String type) { format = type; }
+    public String getFormat() { return format; }
 
+    public void setLocation(String place) { location = place; }
+    public String getLocation() { return location; }
 
-    public void printCourse() {
+    public void setGradingBasis(ArrayList<String> type) { grading_basis = type; }
+    public ArrayList<String> getGradingBasis() { return grading_basis; }
+
+    public void setEquivalentCourses(ArrayList<String> courses) { equivalent_courses = courses; }
+    public ArrayList<String> getEquivalentCourses() { return equivalent_courses; }
+
+    public void setCourseMaterials(ArrayList<String> materials) { course_materials = materials; }
+    public ArrayList<String> getCourseMaterials() { return course_materials; }
+
+    public void printFullCourse() {
         System.out.println("=================================");
         System.out.println(short_id + " - " + title);
         System.out.println("Academic Level: " + academic_level);
@@ -144,6 +140,8 @@ public class Course {
             System.out.println(course_materials);
         }
     }
+
+    public void shortPrint() { System.out.print(short_id + ": " + title); }
 
 
 }

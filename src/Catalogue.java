@@ -1,5 +1,5 @@
 /**********************************************************************************************
- * @file : LinkedList.java
+ * @file : Catalogue.java
  * @description : A doubly-linked list class that manages nodes with data of type Section.
  *                Notable functions include sorting, adding/removing, checking for an empty
  *                list, and a sanity check.
@@ -7,10 +7,10 @@
  * @date : 30 March 2025
  *********************************************************************************************/
 
-public class Catalogue {
+public class Catalogue <DataType> {
 
-    public Node head;
-    public Node tail;
+    public Node<DataType> head;
+    public Node<DataType> tail;
     public int size = 0;
 
     Catalogue(){
@@ -18,36 +18,15 @@ public class Catalogue {
         tail = null;
         size = 0;
     }
-
-    /*  --------------------------------------------------------------------------------------
-     *   shuffle - shuffles the cards in the deck
-     *   int shuffle_count : the number of times the deck is shuffled
-
-    public void shuffle(int shuffle_count) {
-
-        Random rand = new Random();
-        for(int i = 0; i < shuffle_count; i++) {
-            // pick two random integers
-            int r1 = rand.nextInt(1,size);
-            int r2 = rand.nextInt(1,size);
-
-            if (r1 == r2) {
-                r2 = rand.nextInt(1, size);
-            }
-            swap(r1,r2); // swap nodes at these indices
-        }
-    }
-    */
-
     /*  --------------------------------------------------------------------------------------
      *   remove_from_index - removes section at a certain index, from 1-catalogue size
      *   int index : the section to be removed
      */
-    public Section remove_from_index(int index) {
-        Section atIndex;
+    public DataType remove_from_index(int index) {
+        DataType atIndex;
 
         if (index > size) {     //Index out of bounds
-            System.out.println("Cannot remove section at index " + index);
+            System.out.println("Cannot remove at index " + index);
             System.exit(1);
         }
         if (index == 1) {       //Removing head
@@ -65,7 +44,7 @@ public class Catalogue {
             return atIndex;
         }
 
-        Node curr = head;
+        Node<DataType> curr = head;
         int counter = 1;
         //Identify node to be removed (curr)
         while ((counter < index) && (curr != null)) {
@@ -95,10 +74,10 @@ public class Catalogue {
      *   Section x : the section to be inserted
      *   int index : the place to insert the section
      */
-    public void insert_at_index(Section s, int index) {
-        Node curr = head;
+    public void insert_at_index(DataType s, int index) {
+        Node<DataType> curr = head;
         int counter = 1;
-        Node newNode = new Node(s);
+        Node<DataType> newNode = new Node(s);
 
         if (index == 1) {       //Insert at head
             newNode.next = head;
@@ -133,9 +112,9 @@ public class Catalogue {
      *   int index2 + the second index to swap
      */
     public void swap(int index1, int index2) {
-        Node curr = head;
-        Node s1 = curr;
-        Node s2 = curr;
+        Node<DataType> curr = head;
+        Node<DataType> s1 = curr;
+        Node<DataType> s2 = curr;
 
         if (isEmpty()) {
             System.out.println("Cannot swap sections an empty catalogue.");
@@ -156,7 +135,7 @@ public class Catalogue {
             curr = curr.next;
         }
 
-        Section temp = s1.data;
+        DataType temp = s1.data;
         s1.data = s2.data;
         s2.data = temp;
 
@@ -182,8 +161,8 @@ public class Catalogue {
      *   add_at_tail - appends section to the end of the catalogue
      *   Card data : the section to be added
      */
-    public void add_at_tail(Section s) {
-        Node newTail = new Node(s);
+    public void add_at_tail(DataType s) {
+        Node<DataType> newTail = new Node(s);
         if (isEmpty()) {     //List is empty
             head = newTail;
             tail = newTail;
@@ -202,8 +181,8 @@ public class Catalogue {
     /*  --------------------------------------------------------------------------------------
      *   remove_from_head - removes section at the top (head) of the deck
      */
-    public Section remove_from_head() {
-        Section atIndex = head.data;
+    public DataType remove_from_head() {
+        DataType atIndex = head.data;
         if (isEmpty()) {
             System.out.println("Cannot remove a section from an empty list.");
             System.exit(1);
@@ -214,7 +193,7 @@ public class Catalogue {
             return atIndex;
         }
 
-        Node curr = head.next;
+        Node<DataType> curr = head.next;
 
         while (curr != null) {
             curr.prev.data = curr.data;
@@ -238,7 +217,7 @@ public class Catalogue {
     // 3) each node's prev and next elements are correctly updated
     public void sanity_check() {
         // count nodes, counting forward
-        Node curr = head;
+        Node<DataType> curr = head;
         int count_forward = 0;
         while (curr != null) {
             curr = curr.next;
@@ -271,7 +250,7 @@ public class Catalogue {
      *   print - printing the catalogue
      */
     public void print() {
-        Node curr = head;
+        Node<DataType> curr = head;
         int i = 1;
         while(curr != null) {
             System.out.print(curr.data.toString());
@@ -292,81 +271,4 @@ public class Catalogue {
      */
     public boolean isEmpty() { return head == null; }
 
-    //Sort courses cased off of SectionComparator
-    public void sortCourses() {
-        SectionComparator sectionCompare = new SectionComparator();
-        Node curr;
-        int counter;
-
-        if (isEmpty()) {
-            System.out.println("Cannot sort an empty course catalogue.");
-            System.exit(1);
-        }
-
-        while (!isSorted(sectionCompare)) {
-            System.out.println("Initializing curr as head");
-            curr = head;
-            counter = 1;
-
-            while (curr.next != null) {
-                System.out.println("Counter is " + counter);
-                System.out.println("curr is " + curr.data.toString());
-                if (curr.prev != null) {
-                    System.out.println("prev is " + curr.prev.data.toString());
-                }
-                System.out.println("next is " + curr.next.data.toString());
-                if (sectionCompare.compare(curr.data, curr.next.data) < 0) {
-                    System.out.println("Swapping " + counter + " with " + (counter + 1));
-                    print();
-                    swap(counter, (counter + 1));
-                    print();
-                }
-                curr = curr.next;
-                counter++;
-                System.out.println("Update counter");
-            }
-            System.out.println("Out of nested while loop.");
-        }
-    }
-
-    //Checks if classes is sorted based off of SectionComparator
-    public boolean isSorted(SectionComparator SComparing) {
-        Node curr = head;
-        while (curr.next != null) {
-            if (SComparing.compare(curr.data, curr.next.data ) < 0) {
-                return false;
-            }
-            System.out.println("isSorted while loop");
-            curr = curr.next;
-        }
-        return true;
-        /* ARRAYLIST VER
-        for (int i = 0; i < n - 1; i++) {
-            if (SComparing.compare(classes.get(i), classes.get(i+1)) < 0) {
-                return false;
-            }
-        }
-        return true;
-
-         */
-    }
-
-    //Calculates the credit hours in a list of sections
-    public double calculateCredit() {
-        double creditHours = 0;
-        double tempHours = 0;
-        Node curr = head;
-
-        while (curr != null) {
-            try {
-                tempHours = Double.parseDouble(curr.data.getHours());
-            } catch (NumberFormatException e) {
-                System.out.println("Unable to calculate credit hours for section " + curr.data.toString());
-                System.exit(1);
-            }
-            creditHours += tempHours;
-            curr = curr.next;
-        }
-        return creditHours;
-    }
 }
