@@ -4,7 +4,7 @@
  *                Notable functions include sorting, adding/removing, checking for an empty
  *                list, and a sanity check.
  * @author : Ella Shipman
- * @date : 30 March 2025
+ * @date : 25 April 2025
  *********************************************************************************************/
 
 public class Catalogue <DataType> {
@@ -207,43 +207,6 @@ public class Catalogue <DataType> {
 
         size--;
         return atIndex;
-    }
-
-    //FROM LAB 6
-    // check to make sure the linked list is implemented correctly by iterating forwards and backwards
-    // and verifying that the size of the list is the same when counted both ways.
-    // 1) if a node is incorrectly removed
-    // 2) and head and tail are correctly updated
-    // 3) each node's prev and next elements are correctly updated
-    public void sanity_check() {
-        // count nodes, counting forward
-        Node<DataType> curr = head;
-        int count_forward = 0;
-        while (curr != null) {
-            curr = curr.next;
-            count_forward++;
-        }
-
-        // count nodes, counting backward
-        curr = tail;
-        int count_backward = 0;
-        while (curr != null) {
-            curr = curr.prev;
-            count_backward++;
-        }
-
-        // check that forward count, backward count, and internal size of the list match
-        if (count_backward == count_forward && count_backward == size) {
-            System.out.println("Basic sanity Checks passed");
-        }
-        else {
-            // there was an error, here are the stats
-            System.out.println("Count forward:  " + count_forward);
-            System.out.println("Count backward: " + count_backward);
-            System.out.println("Size of LL:     " + size);
-            System.out.println("Sanity checks failed");
-            System.exit(-1);
-        }
     }
 
     /*  --------------------------------------------------------------------------------------

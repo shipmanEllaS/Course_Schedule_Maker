@@ -3,7 +3,7 @@
  * @description : Contains all of the information within an individual section of any course
  *                offered at WFU. Subclass of Course.
  * @author : Ella Shipman
- * @date : 8 April 2025
+ * @date : 25 April 2025
  *********************************************************************************************/
 
 public class Section extends Course implements Comparable<Section>{
@@ -44,6 +44,7 @@ public class Section extends Course implements Comparable<Section>{
     }
 
     //Compares the department and then the time of the sections
+    @Override
     public int compareTo(Section that) {
         int timeCompare = this.compareDept(that.getCourseOwner());
         int deptCompare = this.compareTime(that.calculateMeetingHour(), that.calculateMeetingMinutes());
@@ -55,6 +56,7 @@ public class Section extends Course implements Comparable<Section>{
         }
     }
 
+    //Compares the dept of this section to another section, returns an integer
     public int compareDept(String courseOwner) {
         return this.getCourseOwner().compareTo(courseOwner);
     }
@@ -144,4 +146,6 @@ public class Section extends Course implements Comparable<Section>{
             return Integer.parseInt(meeting_time.substring(2, 4));
         }
     }
+
+    public String getMeetingDay() { return meeting_day;}
 }

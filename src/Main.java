@@ -1,9 +1,11 @@
 /**********************************************************************************************
  * @file : Main.java
  * @description : Takes information from a text file and assigns it to a course object. Once
- *                all courses are added, they are printed out.
+ *                all courses are added, they are printed out. A user can input their user-
+ *                name to pull up their information, manipulate it, and generate a calendar
+ *                or finals schedule view of the course sections they've chosen to save.
  * @author : Ella Shipman
- * @date : 30 March 2025
+ * @date : 25 April 2025
  *********************************************************************************************/
 
 import java.io.*;
@@ -32,20 +34,13 @@ public class Main {
         courseWriter.flush();
         courseWriter.close();
 
-        courseWriter.close();
         try {
             sortedCourseFile.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        promptUser(catalogue);
-
-        Catalogue<Section> userSections = fillSections(catalogue, args);
-        sortCourses(userSections, 't');
-    }
-
-    public static void promptUser(Catalogue<Section> catalogue) {
+        //Prompting user for login
         Scanner scnr = new Scanner(System.in);
         String userInput = "";
         String fileName = "src/";
@@ -61,14 +56,32 @@ public class Main {
             userFile = new FileInputStream(fileName);
             userFile.close();
         } catch (IOException e) {
-            System.out.println("User file not found!");
-            System.exit(1);
+            File newUserFile = new File(fileName);
+            System.out.println("It seems you are a new user! Starting the data input process...");
+            System.out.println();
+            inputNewUserData(fileName, scnr);
         }
 
         System.out.println();
         System.out.println("Welcome, " + userInput + "!");
-        //inputNewUserData(fileName, scnr);
+        System.out.println();
+        System.out.print("Would you like to proceed through the terminal or the GUI? ('t': terminal / 'g': GUI)    ");
+        userInput = scnr.nextLine();
+        if (userInput.isEmpty() || userInput.isBlank()) { userInput = scnr.nextLine(); }
+        while (!(userInput.equals("t")) && !(userInput.equals("g"))) {
+            System.out.print(userInput + " is not a valid input, please enter 't' for terminal or 'g' for GUI"    );
+            userInput = scnr.nextLine();
+        }
+        if (userInput.equals("g")) {
+            new MainGUI(fileName, catalogue);
+        } else {
+            promptUser(catalogue, fileName, userInput, scnr);
+        }
+        System.out.println();
+    }
 
+    //Prompts user for menu selection
+    public static void promptUser(Catalogue<Section> catalogue, String fileName, String userInput, Scanner scnr) {
         while (!userInput.equalsIgnoreCase("e")) {
             System.out.println("=======MENU=======");
             System.out.println("(a) Edit user data");
@@ -95,6 +108,7 @@ public class Main {
 
     }
 
+    //Loads saved schedules so user can edit, create calendar view, or create final table
     public static void loadSavedSchedules(String fileName, Scanner scnr, Catalogue<Section> catalogue) {
         String userInput = "null";
         String input;
@@ -127,7 +141,7 @@ public class Main {
                 System.out.println("Can't open new scanner while loading saved schedules.");
                 System.exit(1);
             }
-            for (int i = 1; i <= 9; i++) {     //Moving to area where saved schedules are saved in userFile, if none, create one
+            for (int i = 1; i <= 9; i++) {     //Moving to save location in userFile, if none, create one
                 userData = fileScan.nextLine();
             }
             if (userData == null) {
@@ -166,8 +180,8 @@ public class Main {
             }
             System.out.println();
             fileScan.close();
-            Catalogue<Section> selectedSections = new Catalogue<>();
 
+            Catalogue<Section> selectedSections = new Catalogue<>();
             switch(userInput) {
                 case "a":
                     int position = 0;
@@ -189,7 +203,6 @@ public class Main {
                     position += 9;        //Saved schedules start at line 10, add 9 when moving line-by-line through userFile
                     for (int j = 1; j <= position; j++) {
                         userData = fileScan.nextLine();
-                        System.out.println(userData + "*********************");
                     }
                     info = userData.split("~~");
 
@@ -247,6 +260,7 @@ public class Main {
         fileScan.close();
     }
 
+    //Return a catalogue of sections based off of a string containing section name and section IDs (ABC 123-D)
     public static Catalogue<Section> generateCatalogueFromSectionList(String savedSchedule, Catalogue<Section> catalogue) {
         Catalogue<Section> sectionsInList = new Catalogue<>();
         int cutoff = savedSchedule.indexOf("~");
@@ -270,6 +284,7 @@ public class Main {
         return sectionsInList;
     }
 
+    //Adds a new saved schedule to the user's file
     public static void createSavedSchedule(String fileName, Scanner scnr) {
         String userInput = null;
         String fullScheduleInfo = null;
@@ -309,6 +324,7 @@ public class Main {
         System.out.println();
     }
 
+    //Add/remove divisionals, additional courses taken, or professors stored in the user file
     public static void editUserData(String fileName, Scanner scnr) {
         String userInput = "null";
         String input;
@@ -521,6 +537,7 @@ public class Main {
         fileScan.close();
     }
 
+    //Inserts a new line in the user file
     public static void modifyUserFileAtLine(String fileName, int lineNum, String replacementLine) {
         ArrayList<String> dataInFile = new ArrayList<>();
         String lineToEdit = null;
@@ -575,6 +592,7 @@ public class Main {
         }
     }
 
+    //Profile set-up for a new user: filling out divisionals, courses taken, and professors
     public static void inputNewUserData(String fileName, Scanner scnr) {
         String userInput = null;
         String[] divisionals = {"DIV I", "DIV II", "DIV III", "DIV IV", "DIV V", "CD", "QR"};
@@ -625,7 +643,7 @@ public class Main {
         System.out.println();
     }
 
-    //ADD EXCEPTION TESTING OR TRY/CATCH STATEMENTS
+    //Populares the professor catalogue from professors.txt
     public static void populateProfessors(String fileName) {
         FileInputStream profFile = null;
         try {
@@ -649,17 +667,22 @@ public class Main {
                 }
             }
 
-            //Need to run through exceptions here. Lest the errors stop the pgm
-            Professor tempProf = new Professor(dataLine[0], dataLine[1], dataLine[2], dataLine[3], dataLine[4], dataLine[5],
-                    Double.parseDouble(dataLine[6]), Integer.parseInt(dataLine[7]),
-                    Double.parseDouble(dataLine[8]));
+            try {
+                Professor tempProf = new Professor(dataLine[0], dataLine[1], dataLine[2], dataLine[3], dataLine[4], dataLine[5],
+                        Double.parseDouble(dataLine[6]), Integer.parseInt(dataLine[7]),
+                        Double.parseDouble(dataLine[8]));
+            } catch (Exception e) {
+                System.out.println("Unable to add professor to the catalogue");
+                System.exit(1);
+            }
         }
     }
 
+    //Fills out the main course catalogue from courses listed in courseFile.txt
     public static Catalogue<Section> putSectionsInCatalogue() {
         FileInputStream courseFile = null;
         try {
-            courseFile = new FileInputStream("C:\\Users\\lminn\\IdeaProjects\\Course_Schedule_Maker\\src\\courseFile.txt");
+            courseFile = new FileInputStream("src/courseFile.txt");
         } catch (FileNotFoundException e) {
             System.out.println("Cannot open course file!");
             System.exit(1);
@@ -709,47 +732,18 @@ public class Main {
                 }
                 newSect.setCourseMaterials(materials);
             }
-
-            //Section number
-            newSect.setSectionID(wordsList[1]);
-
-            //Meeting day(s)
-            newSect.setMeetingDay(wordsList[2]);
-
-            //Meeting times
-            newSect.setMeetingTime(wordsList[3]);
-
-            //Instructor
-            newSect.setInstructor(wordsList[14]);
-
-            //Tags
-            newSect.setTags(wordsList[15]);
+            newSect.setSectionID(wordsList[1]);     //Section number
+            newSect.setMeetingDay(wordsList[2]);    //Meeting day(s)
+            newSect.setMeetingTime(wordsList[3]);   //Meeting times
+            newSect.setInstructor(wordsList[14]);   //Instructor
+            newSect.setTags(wordsList[15]);         //Tags
         }
 
         courseCatalogue.print();
         return courseCatalogue;
-
-        /*
-        0 - id *1
-        1 - section
-        2 - days
-        3 - time
-        4 - title *2
-        5 - level *3
-        6 - dept *4
-        7 - grading @
-        8 - hours *5
-        9 - desc *6
-        10 - format *7
-        11 - equivalent courses @
-        12 - campus *8
-        13 - materials @
-        14 - instructor
-        15 - tags
-         */
     }
 
-    //Prints courses into file "sortedCourseFile.txt"
+    //Prints courses into file sortedCourseFile.txt
     public static void printCourses(Node<Section> listHead, PrintWriter courseWriter) {
         Node<Section> curr = listHead;
         if (listHead == null){
@@ -762,85 +756,11 @@ public class Main {
         }
     }
 
-    //Populates a smaller, user-selected linked list of sections to take
-    //BROKEN -- WORK ON MANUALLY SELECTING CLASSES LATER. ONLY WORKS FOR ARGS RIGHT NOW
-    public static Catalogue<Section> promptSections(Catalogue<Section> catalogue) {
-        Catalogue<Section> userSections = new Catalogue<>();
-
-        System.out.println("Welcome to the WFU Schedule Maker!");
-        System.out.println("Please select the classes you would like to take below.         Press 0 to stop.");
-
-        Scanner scnr = new Scanner(System.in);
-        String userInput = "1";
-        int index = -1;
-
-        System.out.println("Please choose a number from the list in \"sortedCourseFile.txt\" to select your first course.");
-        System.out.println("Press 0 to stop.");
-        userInput = scnr.next();
-        index = -1;
-
-        while (!userInput.equals("0")); {
-            if (calculateCredit(userSections) > 17) {
-                System.out.println("It seems like you have over 17 credit hours! Please be advised that courseloads over" +
-                                    "17 hours may require an academic appeal");
-            }
-
-            System.out.println("Please choose a number from the list in \"sortedCourseFile.txt\" to add a course.");
-            System.out.println("If you would like to remove courses from your list, please press R.");
-            userInput = scnr.next();
-            //index = -1;
-
-            try {
-                index = Integer.parseInt(userInput);
-            } catch (NumberFormatException e) {
-                if (userInput.equalsIgnoreCase("r")) {
-                    System.out.println("Which section in your list would you like to remove? (Please enter a number.)");
-                    try {
-                        userInput = scnr.next();
-                        index = Integer.parseInt(userInput);
-                    } catch (NumberFormatException e2) {
-                        if (userInput.equalsIgnoreCase("c")) {
-                            //break;
-                        } else {
-                            System.out.println("Please enter a valid number, or press C to cancel the swap.");
-                        }
-                    }
-                    Section removed = userSections.remove_from_index(index);
-                    catalogue.add_at_tail(removed);
-                    sortCourses(catalogue, 't');
-
-                    System.out.println("Section " + removed.toString() + " has been removed.");
-                } else {
-                    System.out.println("Please enter a valid number.");
-                }
-            }
-            if (index != -1) {
-                userSections.add_at_tail(catalogue.remove_from_index(index));
-                System.out.println(userSections.tail.data.toString() + " has been added!");
-            }
-            System.out.println();
-        }
-        sortCourses(userSections, 't');
-        return userSections;
-    }
-
-    //Fill the user's personal coureload for the semester
-    public static Catalogue<Section> fillSections(Catalogue<Section> catalogue, String[] args) {
-        Catalogue<Section> userSections = new Catalogue<Section>();
-        if (args.length > catalogue.size) { System.out.println("Cannot add sections : out of bounds in catalogue."); System.exit(1);}
-        for (int i = 0; i < args.length; i++) {
-            catalogue.swap(1, Integer.parseInt(args[i]));
-            userSections.add_at_tail(catalogue.remove_from_head());
-            //System.out.println("Removing " + userSections.tail.data.toString());
-        }
-        return userSections;
-    }
-
     //Creates week-view calendar pop-up for selected sections
     public static void createCalendarView(Catalogue<Section> sections_selected) {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(1.0);
-        StdDraw.setCanvasSize(1600, 400);
+        StdDraw.setCanvasSize(1600, 500);
 
         //Header
         StdDraw.text(0.5, 0.9, "Your Course Schedule");
@@ -862,10 +782,11 @@ public class Main {
         //Class blocks
         Node<Section> curr = sections_selected.head;
         for (int i = 0; i < sections_selected.size; i++) {
+
             for (int j = 0; j < curr.data.getDayOfTheWeek().length; j++) {
                 if (curr.data.getDayOfTheWeek()[j] == 1) {
-                    StdDraw.rectangle(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), 0.055, 0.045);
-                    StdDraw.text(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.65 - (double)(i) / 10), curr.data.getShortID());
+                    StdDraw.rectangle(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.68 - (double)(curr.data.calculateMeetingHour()-8) / 18), 0.055, 0.025);
+                    StdDraw.text(((((double)(j + 1) / 10) * 1.15) + 0.058), (0.675 - (double)(curr.data.calculateMeetingHour()-8) / 18), curr.data.getShortID());
                 }
             }
             curr = curr.next;
@@ -875,8 +796,103 @@ public class Main {
         StdDraw.pause(20);
     }
 
-    public static void createFinalsSchedule(Catalogue<Section> sections_selected) {}
+    //Creates a table showing the finals schedule for the classes chosen
+    public static void createFinalsSchedule(Catalogue<Section> sections_selected) {
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(1.0);
+        StdDraw.setCanvasSize(1000, 600);
 
+        //Header
+        StdDraw.text(0.5, 0.9, "Your Finals Schedule");
+
+        String[] days = {"Day 6", "Day 5", "Day 4", "Day 3", "Day 2", "Day 1"};
+        String[] times = {"9AM", "2PM", "7PM"};
+
+        StdDraw.rectangle(0.5, 0.5, 0.45, 0.35);
+        for (int i = 0; i <= 2; i++) {  //vertical lines
+            StdDraw.line((0.27 + (i*0.225)),0.85, (0.27 + (i*0.225)), 0.15);
+            StdDraw.text((0.3852 + (i*0.225)), 0.8, times[i]);
+        }
+        for (int i = 0; i <= 6; i++) {  //horizontal lines
+            StdDraw.line(0.05, (0.15 + 0.1*i), 0.95, (0.15 + 0.1*i));
+            if (i != 6) {
+                StdDraw.text(0.155, (0.2 + 0.1*i), days[i]);
+            }
+        }
+
+        //Determining where classes will go
+        String[] Days = {"MWF", "MW", "WF", "TR"};
+        int[] Times = {8, 9, 10, 11, 12, 13, 14, 15, 20};
+        String[] Special = {"MTH", "STA", "BUS", "ACC 111", "ACC 221"};
+        Node<Section> curr = sections_selected.head;
+        for (int i = 0; i < sections_selected.size; i++) {
+            double x = 0.0; double y = 0.0;
+            for (int j = 0; j < Special.length; j++) {      //MTH, STA, BUS, ACC cases
+                if (curr.data.getShortID().contains(Special[j])) {
+                    if (curr.data.getShortID().contains("ACC")) { x = 0.8325;
+                        if (curr.data.getShortID().contains("1")) { y = 0.75; }
+                        else {y = 0.5; } }
+                    else { x = 0.3825; y = 0.7; }
+                }
+            }
+            for (int j = 0; j < Times.length; j++) {        //Check time, then day
+                if (curr.data.calculateMeetingHour() == Times[j] && (x == 0 || y == 0)) {
+                    switch (curr.data.calculateMeetingHour()) {
+                        case 8:
+                            x = 0.8325;
+                            if (curr.data.getMeetingDay().equals("TR")) { y = 0.6;
+                            } else { y = 0.3;}
+                            break;
+                        case 9:
+                            if (curr.data.getMeetingDay().equals("MWF")) { x = 0.3825; y = 0.2;
+                            } else {
+                                y = 0.5;
+                                if (curr.data.getMeetingDay().equals("WF")) { x = 0.3825;
+                                } else { x = 0.6075; } }
+                            break;
+                        case 10:
+                            x = 0.3825;
+                            y = 0.5;
+                            break;
+                        case 12:
+                            if (curr.data.getMeetingDay().equals("MWF")) { x = 0.6075; y = 0.7;
+                            } else { y = 0.3; }
+                            if (curr.data.getMeetingDay().equals("TR")) { x = 0.3825;
+                            } else { x = 0.6075; }
+                            break;
+                        case 11:
+                            y = 0.6;
+                            if (curr.data.getMeetingDay().equals("TR")) { x = 0.3825;
+                            } else { x = 0.6075; }
+                            break;
+                        case 13:
+                            x = 0.6075; y = 0.3;
+                            break;
+                        case 14:
+                            y = 0.4;
+                            if (curr.data.getMeetingDay().equals("TR")) { x = 0.3825;
+                            } else { x = 0.6075; }
+                            break;
+                        case 15:
+                            x = 0.6075; y = 0.2;
+                            break;
+                        case 20:
+                            x = 0.8325;
+                            if (curr.data.getMeetingDay().equals("TR")) { y = 0.3;
+                            } else { y = 0.6; }
+                            break;
+                    }
+                } else {
+                    StdDraw.text(x, y, curr.data.getShortID());     //Draw class blocks
+                }
+            }
+            curr = curr.next;
+        }
+        StdDraw.show();
+        StdDraw.pause(20);
+    }
+
+    //Sorts classes based on time or department
     public static void sortCourses(Catalogue<Section> catalogue, char sortBy) {
         Node<Section> curr;
         int counter;
@@ -916,7 +932,7 @@ public class Main {
         }
     }
 
-    //Checks if classes is sorted based off of SectionComparator
+    //Checks if classes is sorted based off of the section comparable
     public static boolean areSectionsSorted(Catalogue<Section> catalogue, char sortBy) {
         Node<Section> curr = catalogue.head;
         int sectionCompare;
@@ -947,6 +963,7 @@ public class Main {
         return creditHours;
     }
 
+    //Returns a section from the main course catalogue based on the course name (ABC 123) and the section id (D)
     public static Section searchForString(Catalogue<Section> catalogue, String sectID, String sectName) {
         Node<Section> curr = catalogue.head;
 
